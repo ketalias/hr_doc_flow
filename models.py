@@ -3,6 +3,7 @@
 from dataclasses import dataclass, field
 from datetime import date
 from enum import Enum
+from typing import Optional
 
 
 class OrderType(str, Enum):
@@ -37,10 +38,11 @@ class Employee:
     middle_name: str
     position: str
     department: str
-    hire_date: date
-    birth_date: date
+    hire_date: Optional[str] = None
+    birth_date: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
     folder_id: str = field(default="")
-    email: str = field(default="")
 
     @property
     def full_name(self) -> str:
@@ -59,15 +61,56 @@ class Employee:
 
     def __str__(self) -> str:
         return f"{self.short_name} [{self.employee_id}] — {self.position}"
+
+    def to_template_dict(self) -> dict:
+        """Повертає словник для підстановки у шаблони Google Docs."""
+        today = date.today()
+        data = {
+            "{{employee_id}}": self.employee_id,
+            "{{first_name}}": self.first_name,
+            "{{last_name}}": self.last_name,
+            "{{full_name}}": self.full_name,
+            "{{position}}": self.position,
+            "{{department}}": self.department,
+            "{{date}}": today.strftime("%d.%m.%Y"),
+        }
+        if self.hire_date:
+            data["{{hire_date}}"] = self.hire_date
+        if self.birth_date:
+            data["{{birth_date}}"] = self.birth_date
+        if self.email:
+            data["{{email}}"] = self.email
+        if self.phone:
+            data["{{phone}}"] = self.phone
+        return data
+
+    @classmethod
+    def from_profile(cls, profile: dict, folder_id: str = None) -> "Employee":
+        """Створює Employee з даних profile.json."""
+        return cls(
+            employee_id=profile.get("employee_id", ""),
+            first_name=profile.get("first_name", ""),
+            last_name=profile.get("last_name", ""),
+            middle_name=profile.get("middle_name", ""),
+            position=profile.get("position", ""),
+            department=profile.get("department", ""),
+            hire_date=profile.get("hire_date"),
+            birth_date=profile.get("birth_date"),
+            email=profile.get("email"),
+            phone=profile.get("phone"),
+            folder_id=folder_id or "",
+        )
+
+
 def get_employee_mock(emp_id: str) -> Employee:
-    """
-    Тимчасова функція-заглушка для тестування генерації документів,
-    поки не готова справжня логіка читання з Google Drive.
-    """
+    """Тимчасова заглушка для тестування без Google Drive."""
     return Employee(
         employee_id=emp_id,
         first_name="Іван",
         last_name="Франко",
+        middle_name="Якович",
         position="Junior QA",
         department="Engineering",
-        hire_date="2026-06-01")
+        hire_date="2026-06-01",
+        birth_date="1990-05-15",
+    )

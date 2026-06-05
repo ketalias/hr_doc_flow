@@ -69,15 +69,16 @@ def copy_template(drive_service, template_id, destination_folder_id, new_file_na
 
 def fill_document(docs_service, document_id, employee):
     """Замінює маркери в документі на реальні дані працівника з обробкою помилок."""
+    template_data = employee.to_template_dict()
     requests = [
-        {'replaceAllText': {'containsText': {'text': '{{first_name}}', 'matchCase': True}, 'replaceText': employee.first_name}},
-        {'replaceAllText': {'containsText': {'text': '{{last_name}}', 'matchCase': True}, 'replaceText': employee.last_name}},
-        {'replaceAllText': {'containsText': {'text': '{{position}}', 'matchCase': True}, 'replaceText': employee.position}},
-        {'replaceAllText': {'containsText': {'text': '{{department}}', 'matchCase': True}, 'replaceText': employee.department}},
+        {
+            'replaceAllText': {
+                'containsText': {'text': marker, 'matchCase': True},
+                'replaceText': value,
+            }
+        }
+        for marker, value in template_data.items()
     ]
-    
-    if employee.hire_date:
-        requests.append({'replaceAllText': {'containsText': {'text': '{{hire_date}}', 'matchCase': True}, 'replaceText': employee.hire_date}})
 
     try:
         # Відправляємо одним пакетом (batch) всі зміни в документ
