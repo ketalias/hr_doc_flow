@@ -1,1 +1,4 @@
-"""api — Google Drive / Docs integration (Andrii's module)."""
+"""api — Google Drive / Docs integration."""
+from api.drive import DriveClient
+
+__all__ = ["DriveClient"]

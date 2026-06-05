@@ -22,6 +22,22 @@ class OrderType(str, Enum):
         }[self]
 
 
+def _format_date(value: "date | str | None") -> str:
+    """Normalize date to Ukrainian dd.mm.yyyy format. Accepts date object or ISO string."""
+    if value is None:
+        return ""
+    if isinstance(value, date):
+        return value.strftime("%d.%m.%Y")
+    # Try ISO (2024-01-15) or already formatted (15.01.2024)
+    for fmt in ("%Y-%m-%d", "%d.%m.%Y", "%d/%m/%Y"):
+        try:
+            from datetime import datetime as _dt
+            return _dt.strptime(str(value).strip(), fmt).strftime("%d.%m.%Y")
+        except ValueError:
+            continue
+    return str(value)  # fallback: return as-is
+
+
 @dataclass
 class Employee:
     """
@@ -70,14 +86,22 @@ class Employee:
             "{{first_name}}": self.first_name,
             "{{last_name}}": self.last_name,
             "{{full_name}}": self.full_name,
+            "{{short_name}}": self.short_name,
             "{{position}}": self.position,
             "{{department}}": self.department,
             "{{date}}": today.strftime("%d.%m.%Y"),
+            "{{year}}": str(today.year),
+            "{{month}}": f"{today.month:02d}",
+            "{{day}}": f"{today.day:02d}",
         }
         if self.hire_date:
-            data["{{hire_date}}"] = self.hire_date
+            formatted = _format_date(self.hire_date)
+            data["{{hire_date}}"] = formatted
+            data["{{hire_date_ua}}"] = formatted
         if self.birth_date:
-            data["{{birth_date}}"] = self.birth_date
+            formatted = _format_date(self.birth_date)
+            data["{{birth_date}}"] = formatted
+            data["{{birth_date_ua}}"] = formatted
         if self.email:
             data["{{email}}"] = self.email
         if self.phone:

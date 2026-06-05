@@ -1,7 +1,5 @@
 """MockDataManager — stand-in for Misha's data.scanner module."""
 
-from datetime import date
-
 from models import Employee
 
 
@@ -17,8 +15,8 @@ class MockDataManager:
                 middle_name="Іванович",
                 position="Розробник програмного забезпечення",
                 department="IT",
-                hire_date=date(2022, 3, 15),
-                birth_date=date(1990, 7, 20),
+                hire_date="2022-03-15",
+                birth_date="1990-07-20",
                 folder_id="mock_folder_001",
                 email="kovalenko@company.ua",
             ),
@@ -29,8 +27,8 @@ class MockDataManager:
                 middle_name="Петрівна",
                 position="HR-менеджер",
                 department="HR",
-                hire_date=date(2021, 1, 10),
-                birth_date=date(1988, 4, 5),
+                hire_date="2021-01-10",
+                birth_date="1988-04-05",
                 folder_id="mock_folder_002",
                 email="shevchenko@company.ua",
             ),
@@ -41,8 +39,8 @@ class MockDataManager:
                 middle_name="Олегович",
                 position="Бухгалтер",
                 department="Фінанси",
-                hire_date=date(2019, 9, 1),
-                birth_date=date(1985, 12, 30),
+                hire_date="2019-09-01",
+                birth_date="1985-12-30",
                 folder_id="mock_folder_003",
                 email="boyko@company.ua",
             ),

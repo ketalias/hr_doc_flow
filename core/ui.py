@@ -18,7 +18,7 @@ from rich.table import Table
 from rich.text import Text
 
 from core.logger import console
-from models import Employee, OrderType
+from models import Employee, OrderType, _format_date
 
 
 # ─── questionary colour scheme ────────────────────────────────────────────────
@@ -290,7 +290,7 @@ def display_employees_table(employees: list[Employee]) -> None:
             emp.full_name,
             emp.position,
             emp.department,
-            emp.hire_date.strftime("%d.%m.%Y"),
+            _format_date(emp.hire_date) or "—",
         )
 
     console.print()
