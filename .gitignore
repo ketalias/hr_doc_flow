@@ -17,3 +17,6 @@ Orders/
    
 # Logs
 *.log
+logs/
+
+.claude/
