@@ -9,66 +9,11 @@ import json
 import os
 from pathlib import Path
 
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
+from core.config import get_credentials
 from models import Employee, OrderType
-
-# ─── OAuth scopes ─────────────────────────────────────────────────────────────
-
-SCOPES = [
-    "https://www.googleapis.com/auth/drive",
-    "https://www.googleapis.com/auth/documents",
-]
-
-_PROJECT_ROOT = Path(__file__).resolve().parent.parent
-_TOKEN_PATH = _PROJECT_ROOT / "token.json"
-
-# Шукаємо credentials у кількох можливих назвах
-_CREDS_CANDIDATES = [
-    "client_secret_2_59362188699-09m2vh4m2o8698t40c74ofpd4sbb5ihd.apps.googleusercontent.com.json",
-    "client_secret_59362188699_09m2vh4m2o8698t40c74ofpd4sbb5ihd_apps.json",
-    "credentials.json",
-]
-_CREDS_PATH = next(
-    (p for name in _CREDS_CANDIDATES if (p := _PROJECT_ROOT / name).exists()),
-    _PROJECT_ROOT / "credentials.json",
-)
-
-
-# ─── Auth helper ──────────────────────────────────────────────────────────────
-
-def _get_credentials() -> Credentials:
-    """
-    Load saved credentials from token.json, refresh if expired,
-    or run the OAuth browser flow on the first launch.
-    """
-    creds: Credentials | None = None
-
-    if _TOKEN_PATH.exists():
-        creds = Credentials.from_authorized_user_file(str(_TOKEN_PATH), SCOPES)
-
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            if not _CREDS_PATH.exists():
-                raise FileNotFoundError(
-                    f"OAuth credentials file not found: {_CREDS_PATH}\n"
-                    "Download it from Google Cloud Console → APIs & Services → Credentials."
-                )
-            flow = InstalledAppFlow.from_client_secrets_file(str(_CREDS_PATH), SCOPES)
-            creds = flow.run_local_server(port=0)
-
-        # Зберігаємо токен для наступних запусків
-        with open(_TOKEN_PATH, "w", encoding="utf-8") as f:
-            f.write(creds.to_json())
-
-    return creds
-
 
 # ─── DriveClient ──────────────────────────────────────────────────────────────
 
@@ -83,7 +28,7 @@ class DriveClient:
     """
 
     def __init__(self) -> None:
-        creds = _get_credentials()
+        creds = get_credentials()
         self._drive = build("drive", "v3", credentials=creds)
         self._docs  = build("docs",  "v1", credentials=creds)
         self._templates_folder_id = os.getenv("TEMPLATES_FOLDER_ID", "")

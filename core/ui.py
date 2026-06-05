@@ -4,6 +4,7 @@ Single responsibility: translate between Python objects and the terminal.
 No business logic — that belongs in orchestrator.py.
 """
 
+import sys
 import time
 from datetime import date, datetime
 from typing import Optional
@@ -70,12 +71,29 @@ def _banner_frame(offset: int) -> Panel:
 
 def display_animated_banner(duration: float = 2.2, fps: int = 20) -> None:
     """Roll a colour wave across the ASCII logo, then leave the final frame in place."""
-    n = int(duration * fps)
-    with Live(console=console, refresh_per_second=fps) as live:
-        for i in range(n):
-            live.update(_banner_frame(i))
-            time.sleep(1.0 / fps)
-    console.print()
+    try:
+        # Check if console supports unicode box-drawing characters
+        "\u2566".encode(sys.stdout.encoding or "utf-8")
+        has_unicode = True
+    except Exception:
+        has_unicode = False
+
+    if has_unicode:
+        try:
+            n = int(duration * fps)
+            with Live(console=console, refresh_per_second=fps) as live:
+                for i in range(n):
+                    live.update(_banner_frame(i))
+                    time.sleep(1.0 / fps)
+            console.print()
+            return
+        except Exception:
+            pass
+
+    # Fallback to simple standard print to bypass Rich buffer encoding issues
+    print("=== LogicNest HR ===")
+    print("Система автоматизованого кадрового документообігу")
+    print()
 
 
 # ─── Main menu ────────────────────────────────────────────────────────────────

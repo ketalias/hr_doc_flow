@@ -3,7 +3,7 @@
 import sys
 import logging
 
-from dotenv import load_dotenv
+from core.config import ensure_config_loaded
 
 from core.logger import get_logger
 from core.orchestrator import Orchestrator
@@ -154,7 +154,7 @@ _ACTIONS = {
 # ─── Main ─────────────────────────────────────────────────────────────────────
 
 def main() -> None:
-    load_dotenv()
+    ensure_config_loaded()
     log = get_logger()
 
     orchestrator = Orchestrator(
