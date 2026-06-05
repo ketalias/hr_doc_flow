@@ -27,9 +27,17 @@ SCOPES = [
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 _TOKEN_PATH   = _PROJECT_ROOT / "token.json"
-_CREDS_PATH   = _PROJECT_ROOT / "client_secret_59362188699_09m2vh4m2o8698t40c74ofpd4sbb5ihd_apps.json"
-if not _CREDS_PATH.exists():
-    _CREDS_PATH = _PROJECT_ROOT / "credentials.json"
+
+# Шукаємо credentials у кількох можливих назвах
+_CREDS_CANDIDATES = [
+    "client_secret_2_59362188699-09m2vh4m2o8698t40c74ofpd4sbb5ihd.apps.googleusercontent.com.json",
+    "client_secret_59362188699_09m2vh4m2o8698t40c74ofpd4sbb5ihd_apps.json",
+    "credentials.json",
+]
+_CREDS_PATH = next(
+    (p for name in _CREDS_CANDIDATES if (p := _PROJECT_ROOT / name).exists()),
+    _PROJECT_ROOT / "credentials.json",
+)
 
 
 def _get_credentials() -> Credentials:
@@ -123,6 +131,8 @@ class DataManager:
         if not self._employees_folder_id:
             raise ValueError("EMPLOYEES_FOLDER_ID is not set in .env.")
 
+        from models import _format_date  # avoid circular at module level
+
         folder_name = f"{employee.last_name} {employee.first_name} ({employee.employee_id})"
         folder_id   = self._get_or_create_folder(folder_name, self._employees_folder_id)
 
@@ -133,8 +143,8 @@ class DataManager:
             "middle_name": employee.middle_name,
             "position":    employee.position,
             "department":  employee.department,
-            "hire_date":   employee.hire_date  or "",
-            "birth_date":  employee.birth_date or "",
+            "hire_date":   _format_date(employee.hire_date),
+            "birth_date":  _format_date(employee.birth_date),
             "email":       employee.email  or "",
             "phone":       employee.phone  or "",
         }
@@ -142,6 +152,7 @@ class DataManager:
 
         from dataclasses import replace
         return replace(employee, folder_id=folder_id)
+
 
     # ── Private helpers ───────────────────────────────────────────────────────
 

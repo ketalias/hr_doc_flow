@@ -26,11 +26,17 @@ SCOPES = [
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 _TOKEN_PATH = _PROJECT_ROOT / "token.json"
-_CREDS_PATH = _PROJECT_ROOT / "client_secret_59362188699_09m2vh4m2o8698t40c74ofpd4sbb5ihd_apps.json"
 
-# Fallback: підтримуємо також старий credentials.json
-if not _CREDS_PATH.exists():
-    _CREDS_PATH = _PROJECT_ROOT / "credentials.json"
+# Шукаємо credentials у кількох можливих назвах
+_CREDS_CANDIDATES = [
+    "client_secret_2_59362188699-09m2vh4m2o8698t40c74ofpd4sbb5ihd.apps.googleusercontent.com.json",
+    "client_secret_59362188699_09m2vh4m2o8698t40c74ofpd4sbb5ihd_apps.json",
+    "credentials.json",
+]
+_CREDS_PATH = next(
+    (p for name in _CREDS_CANDIDATES if (p := _PROJECT_ROOT / name).exists()),
+    _PROJECT_ROOT / "credentials.json",
+)
 
 
 # ─── Auth helper ──────────────────────────────────────────────────────────────
@@ -127,14 +133,14 @@ class DriveClient:
         return mapping
 
     def create_order(
-        self, template_id: str, employee: Employee, folder_path: str
+        self, template_id: str, employee: Employee, folder_path: str, order_type: str
     ) -> str:
         """
         1. Copy the template to the target Drive folder.
         2. Fill {{markers}} with employee data.
         3. Return a browser-ready URL to the created document.
         """
-        doc_name = _build_doc_name(employee, template_id)
+        doc_name = _build_doc_name(employee, order_type)
 
         # ── Step 1: copy ──────────────────────────────────────────────────────
         try:
@@ -176,19 +182,12 @@ class DriveClient:
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 
-def _build_doc_name(employee: Employee, template_id: str) -> str:
+def _build_doc_name(employee: Employee, order_type: str) -> str:
     """Generate a human-readable document name."""
-    # Визначаємо тип наказу з template_id або за замовчуванням
     label_map = {
         OrderType.HIRE.value:     "Наказ_про_прийняття",
         OrderType.VACATION.value: "Наказ_про_відпустку",
         OrderType.DISMISS.value:  "Наказ_про_звільнення",
     }
-    # Якщо template_id не містить ключового слова — використовуємо загальну назву
-    prefix = "Наказ"
-    for key, name in label_map.items():
-        if key in template_id.lower():
-            prefix = name
-            break
-
+    prefix = label_map.get(order_type, "Наказ")
     return f"{prefix}_{employee.last_name}_{employee.first_name}"

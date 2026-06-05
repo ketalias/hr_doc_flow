@@ -50,7 +50,7 @@ class ApiClientProtocol(Protocol):
         ...
 
     def create_order(
-        self, template_id: str, employee: Employee, folder_path: str
+        self, template_id: str, employee: Employee, folder_path: str, order_type: str
     ) -> str:
         """
         Copy the template, substitute {{markers}}, save to folder_path.
@@ -149,7 +149,7 @@ class Orchestrator:
             today.month,
         )
 
-        doc_url = self._api.create_order(template_id, employee, folder_path)
+        doc_url = self._api.create_order(template_id, employee, folder_path, order_type.value)
 
         self._log.info(
             f"Document saved → [bold]{folder_path}[/bold]"

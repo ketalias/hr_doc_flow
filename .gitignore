@@ -20,3 +20,7 @@ Orders/
 logs/
 
 .claude/
+*.bat
+build/
+dist/
+*.spec

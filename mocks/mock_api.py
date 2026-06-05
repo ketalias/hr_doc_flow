@@ -14,7 +14,7 @@ class MockApiClient:
         }
 
     def create_order(
-        self, template_id: str, employee: Employee, folder_path: str
+        self, template_id: str, employee: Employee, folder_path: str, order_type: str
     ) -> str:
         """Returns a fake Google Docs URL."""
         return (
